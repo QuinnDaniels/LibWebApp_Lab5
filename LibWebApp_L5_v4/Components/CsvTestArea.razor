@@ -1,0 +1,146 @@
+﻿@page "/csvArea"
+@using LibWebApp_L5_v4.Services
+@using LibWebApp_L5_v4.Models
+@inject ILibraryService libService
+@inject ILibServ libby
+
+
+<h3>CsvTestArea</h3>
+
+
+<h3>Component</h3>
+
+
+
+
+
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>users</th>
+            <th>books</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td>
+                <!-- USER -->
+
+                <h3>User List</h3>
+
+                @if (users == null)
+                {
+                    <p>Loading books...</p>
+                }
+                else if (!users.Any())
+                {
+                    <p>No books available.</p>
+                }
+                else
+                {
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in users)
+                            {
+                                <tr>
+                                    <td>@user.Id</td>
+                                    <td>@user.Name</td>
+                                    <td>@user.Email</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+
+
+            </td>
+
+
+            <td>
+                <!-- BOOK -->
+
+
+                <h3>Book List</h3>
+
+                @if (books == null)
+                {
+                    <p>Loading books...</p>
+                }
+                else if (!books.Any())
+                {
+                    <p>No books available.</p>
+                }
+                else
+                {
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>ISBN</th>
+                                <th>AvailableCopies</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var book in books)
+                            {
+                                <tr>
+                                    <td>@book.Id</td>
+                                    <td>@book.Title</td>
+                                    <td>@book.Author</td>
+                                    <td>@book.ISBN</td>
+                                    <td>@book.AvailableCopies</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+
+
+            </td>
+
+
+        </tr>
+    </tbody>
+
+</table>
+
+
+
+
+
+
+
+<!--e 'Id'[0] was not found.
+Header with name 'Title'[0] was not found.
+Header with name 'Author'[0] was not found.
+Header with name 'ISBN'[0] was not found.
+Header with name 'AvailableCopies'[0] -->
+
+@code {
+    private List<Book> books;
+
+    private List<User> users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //    books = await libService.GetAllBooksAsync();
+        users = await libby.ReadUsersOldAsync();
+        books = await libby.ReadBooksOldAsync();
+    }
+}
+
+
