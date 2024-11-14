@@ -12,6 +12,7 @@ using static System.Reflection.Metadata.BlobBuilder;
 using System.Globalization;
 using CsvHelper.TypeConversion;
 using System.IO;
+using System.Diagnostics;
 
 
 
@@ -465,6 +466,315 @@ namespace LibWebApp_L5_v4.Services
             AllQuestions.Add(toAdd);
         }
         */
+
+
+
+
+
+
+
+
+
+
+
+        public void EditUser(int userId, string? eName, string? eEmail)
+        {
+
+            List<User> uList = ReadUsersOld();
+            //Console.Write("\nEnter User ID to Edit: ");
+
+            //if (int.TryParse(Console.ReadLine(), out int userId))
+            //{
+            try { 
+                User? user = uList.FirstOrDefault(u => u.Id == userId);
+
+                if (user != null)
+                {
+                    Console.Write("Enter new Name (leave blank to keep current): ");
+                    if (!string.IsNullOrEmpty(eName)) user.Name = eName;
+
+                    Console.Write("Enter new Email (leave blank to keep current): ");
+                    if (!string.IsNullOrEmpty(eEmail)) user.Email = eEmail;
+
+
+                    string tID = userId.ToString();
+
+                    string tPath = _UserPath();
+                    List<String> lines = new List<String>();
+                    if (File.Exists(tPath)) ;
+                    {
+                        using (StreamReader reader = new StreamReader(tPath))
+                        {
+                            String line;
+
+                            while ((line = reader.ReadLine()) != null)
+                            {
+                                if (line.Contains(","))
+                                {
+                                    String[] split = line.Split(',');
+
+                                    if (split[0].Contains(tID))
+                                    {
+                                        split[1] = user.Name;
+                                        split[2] = user.Email;
+                                        line = String.Join(",", split);
+                                    }
+                                }
+
+                                lines.Add(line);
+                            }
+                        }
+
+                        using (StreamWriter writer = new StreamWriter(tPath, false))
+                        {
+                            foreach (String line in lines)
+                                writer.WriteLine(line);
+                        }
+
+                        Console.WriteLine("User updated successfully!\n");
+                    }
+                }
+            }
+                /*    else
+                  {
+                        Console.WriteLine("User not found!\n");
+                }*/
+                catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred: {ex.Message}. User not found", ex);
+            }
+        }
+
+
+        /*
+
+        public void EditUser(User editUser, string? eName, string? eEmail)
+        {
+
+            List<User> uList = ReadUsersOld();
+            //Console.Write("\nEnter User ID to Edit: ");
+
+            //if (int.TryParse(Console.ReadLine(), out int userId))
+            //{
+            try
+            {
+                User? user = uList.FirstOrDefault(u => u.Id == editUser.Id);
+
+                if (user != null)
+                {
+                    Console.Write("Enter new Name (leave blank to keep current): ");
+                    if (!string.IsNullOrEmpty(eName)) user.Name = eName;
+
+                    Console.Write("Enter new Email (leave blank to keep current): ");
+                    if (!string.IsNullOrEmpty(eEmail)) user.Email = eEmail;
+
+
+                    string tID = userId.ToString();
+
+                    string tPath = _UserPath();
+                    List<String> lines = new List<String>();
+                    if (File.Exists(tPath)) ;
+                    {
+                        using (StreamReader reader = new StreamReader(tPath))
+                        {
+                            String line;
+
+                            while ((line = reader.ReadLine()) != null)
+                            {
+                                if (line.Contains(","))
+                                {
+                                    String[] split = line.Split(',');
+
+                                    if (split[0].Contains(tID))
+                                    {
+                                        split[1] = user.Name;
+                                        split[2] = user.Email;
+                                        line = String.Join(",", split);
+                                    }
+                                }
+
+                                lines.Add(line);
+                            }
+                        }
+
+                        using (StreamWriter writer = new StreamWriter(tPath, false))
+                        {
+                            foreach (String line in lines)
+                                writer.WriteLine(line);
+                        }
+
+                        Console.WriteLine("User updated successfully!\n");
+                    }
+                }
+            }
+            
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred: {ex.Message}. User not found", ex);
+            }
+        }
+
+
+*/
+
+
+
+
+
+
+        public async Task<string> EditUserAsyncResult(int userId, string? eName, string? eEmail)
+        {
+
+            List<User> uList = ReadUsersOld();
+
+            try
+            {
+                User? user = uList.FirstOrDefault(u => u.Id == userId);
+
+                if (user != null)
+                {
+                    //Console.Write("Enter new Name (leave blank to keep current): ");
+                    if (!string.IsNullOrEmpty(eName)) user.Name = eName;
+
+                    //Console.Write("Enter new Email (leave blank to keep current): ");
+                    if (!string.IsNullOrEmpty(eEmail)) user.Email = eEmail;
+
+
+                    string tID = userId.ToString();
+
+                    string tPath = _UserPath();
+                    List<String> lines = new List<String>();
+                    if (File.Exists(tPath)) ;
+                    {
+                        using (StreamReader reader = new StreamReader(tPath))
+                        {
+                            String line;
+
+                            while ((line = reader.ReadLine()) != null)
+                            {
+                                if (line.Contains(","))
+                                {
+                                    String[] split = line.Split(',');
+
+                                    if (split[0].Contains(tID))
+                                    {
+                                        split[1] = user.Name;
+                                        split[2] = user.Email;
+                                        line = String.Join(",", split);
+                                    }
+                                }
+
+                                lines.Add(line);
+                            }
+                        }
+
+                        using (StreamWriter writer = new StreamWriter(tPath, false))
+                        {
+                            foreach (String line in lines)
+                                writer.WriteLine(line);
+                        }
+
+                        return await Task.FromResult("User updated successfully!");
+                    } 
+                }
+                return await Task.FromResult("User not found!");
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred: {ex.Message}.", ex);
+            }
+        }
+
+
+
+
+
+
+        public void EditBook(int bookId, string? eTitle, string? eAuthor, string? eisbn, string? eCopiesString)
+        {
+
+            bool eCS = int.TryParse(eCopiesString, out int eCopies);
+            
+
+            List<Book> bList = ReadBooksOld();
+            //Console.Write("\nEnter User ID to Edit: ");
+
+            //if (int.TryParse(Console.ReadLine(), out int userId))
+            //{
+            try
+            {
+                Book? book = bList.FirstOrDefault(b => b.Id == bookId);
+
+                if (book != null)
+                {
+                    Console.Write("Enter new Name (leave blank to keep current): ");
+                    
+                    if (!string.IsNullOrEmpty(eTitle)) book.Title = eTitle;
+                    if (!string.IsNullOrEmpty(eAuthor)) book.Author = eAuthor;
+                    if (!string.IsNullOrEmpty(eisbn)) book.ISBN = eisbn;
+                    if (eCS) book.AvailableCopies = eCopies;
+
+
+                    string tID = bookId.ToString();
+
+                    string tPath = _BookPath();
+                    List<String> lines = new List<String>();
+                    if (File.Exists(tPath)) ;
+                    {
+                        using (StreamReader reader = new StreamReader(tPath))
+                        {
+                            String line;
+
+                            while ((line = reader.ReadLine()) != null)
+                            {
+                                if (line.Contains(","))
+                                {
+                                    String[] split = line.Split(',');
+
+                                    String[] tSplit = book.Title.Split(',');
+
+
+                                    if (split[0].Contains(tID))
+                                    {
+                                        int i = 0;
+                                        foreach (string s in tSplit)
+                                        {
+                                            split[i++] = s.Trim();
+                                        }
+                                        split[ tSplit.Length + 1 ] = book.Title;
+                                        split[ tSplit.Length + 2 ] = book.Author;
+                                        split[ tSplit.Length + 3 ] = book.ISBN;
+                                        split[ tSplit.Length + 4 ] = book.AvailableCopies.ToString();
+                                        line = String.Join(",", split);
+                                    }
+                                }
+                                lines.Add(line);
+                            }
+                        }
+
+                        using (StreamWriter writer = new StreamWriter(tPath, false))
+                        {
+                            foreach (String line in lines)
+                                writer.WriteLine(line);
+                        }
+
+                        Console.WriteLine("Book updated successfully!\n");
+                    }
+                }
+            }
+            /*    else
+              {
+                    Console.WriteLine("Book not found!\n");
+            }*/
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred: {ex.Message}. Book not found", ex);
+            }
+        }
+
+
+
+
 
 
     }
