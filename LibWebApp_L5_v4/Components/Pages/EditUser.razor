@@ -1,0 +1,246 @@
+﻿@page "/editUser"
+@using LibWebApp_L5_v4.Models
+@using LibWebApp_L5_v4.Services
+
+@inject ILibServ libby
+
+<style>
+    .MyHighlightClass:
+
+</style>
+
+<h3>EditUserPage</h3>
+<table>
+    <tbody>
+        <tr>
+            <td>
+                @if (users == null)   { <p>Loading users...</p> }
+                    else if (!users.Any())  {  <p>No users available.</p>  }
+                    else {
+                        <table class="table">
+                            <tbody>
+                                @foreach (var row in users)
+                                {
+                                string colorClass = (row == SelectedUser) ? "MyHighlightClass" : "";
+                                
+                                //string locator = $"editorRow{row.Id}";
+
+
+                                <tr class="@colorClass" style="color:navy; cursor:pointer; text-decoration:underline" @onclick="() => { ReturnRowData(row); SelectedUser = row; }">
+                                        <td>@row.Id</td>
+                                        <td>@row.Name</td>
+                                        <td>@row.Email</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+            </td>
+            <td style="vertical-align: top">
+                <br />
+                @if (SelectedUser.Id != 0)
+                {
+                    <h3>Selected user #@SelectedUser.Id (@SelectedUser.Name) </h3>
+                }
+
+
+                <br />
+                User Name:
+                <input @bind=UserName />
+                <br />
+                User Email:
+                <br />
+                <input @bind=UserEmail />
+                <br />
+                <button @onclick=SubmitUser class="btn btn-danger">Submit User</button>
+
+                <hr />
+
+            </td>
+        </tr>
+    </tbody>
+
+</table>
+
+
+
+
+@*
+<h3>AddBookPage</h3>
+<br />
+Book Title:
+<input @bind=BookTitle />
+<br />
+Book Author:
+<input @bind=BookAuthor />
+<br />
+Book ISBN:
+<input @bind=BookISBN />
+<br />
+
+Book AvailableCopies:
+<input @bind=BookAvailableCopies />
+<br />
+
+
+
+<button @onclick=SubmitBook class="btn btn-danger">Submit Book</button>
+*@
+
+
+@*<!--
+<input @bind=OptionText2 />
+<br />
+<input @bind=OptionText3 />
+<br />
+<input @bind=OptionText4 />
+<br />
+-->*@
+
+@code {
+    string UserName { get; set; }
+    string UserEmail { get; set; }
+
+    string BookTitle { get; set; }
+    string BookAuthor { get; set; }
+    string BookISBN { get; set; }
+   @*
+   string BookAvailableCopies { get; set; }
+   *@
+
+
+
+    private List<Book> books;
+    private List<User> users;
+
+
+    User SelectedUser { get; set; } = new User();
+
+//    private int editorID;
+  //  private string rowClass;
+
+    string editorUserName { get; set; }
+    string editorUserEmail { get; set; }
+
+
+    //private List<Model> myModel = new List<Model>();
+
+    private void Edit(int ID)
+    {
+        Console.WriteLine("You clicked" + ID);
+        //editorID = ID;
+        //rowClass = $"editorRow{ID}";
+
+    }
+
+    void ReturnRowData(User user)
+    {
+        Console.WriteLine("You clicked" + user.Id);   
+        Console.WriteLine("You clicked" + user.Name);
+        Console.WriteLine("You clicked" + user.Email);
+    }
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //    books = await libService.GetAllBooksAsync();
+        users = await libby.ReadUsersOldAsync();
+        books = await libby.ReadBooksOldAsync();
+    }
+
+
+
+    public void SubmitUser()
+    {
+
+        //int u = userInc();
+
+        List<User> adder = new List<User>
+        {
+            //make new User
+            new User
+                {
+                    Id = libby.userInc(),
+                    Name = UserName,
+                    Email = UserEmail
+                },
+        };
+
+
+        /*convert to a new function:    libby.makeUser(string uName, string uEmail)*/
+
+
+
+@*
+        Question toAdd = new Question
+            {
+                QuestionText = QuestionText,
+                Options = new Dictionary<string, bool>()
+            };
+*@
+
+@*        //add options
+        toAdd.Options[OptionText1] = true;
+        toAdd.Options[OptionText2] = false;
+        toAdd.Options[OptionText3] = false;
+        toAdd.Options[OptionText4] = false;
+
+
+        //shuffle
+        toAdd.ShuffleOptions();
+
+
+        //add to service
+        QuizMgr.AddQuestion(toAdd);
+*@
+
+
+        //add to service
+        libby.AppendNewUser(adder);
+
+
+        @*
+        //clear input boxes
+        QuestionText = String.Empty;
+        OptionText1 = String.Empty;
+        OptionText2 = String.Empty;
+        OptionText3 = String.Empty;
+        OptionText4 = String.Empty;
+        *@
+
+        //clear input boxes
+        UserName = String.Empty;
+        UserEmail = String.Empty;
+
+
+    }
+
+    public void SubmitBook()
+    {
+        
+        List<Book> adder = new List<Book>
+            {
+                //make new User
+                new Book
+                    {
+                        Id = libby.bookInc(),
+                        Title = BookTitle,
+                        Author = BookAuthor,
+                        ISBN = BookISBN,
+                        AvailableCopies = 1 @*BookAvailableCopies*@
+
+                    },
+            };
+
+        //add to service
+        libby.AppendNewBook(adder);
+
+        //clear input boxes
+        UserName = String.Empty;
+        UserEmail = String.Empty;
+    }
+
+
+}
