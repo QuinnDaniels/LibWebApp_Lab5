@@ -47,13 +47,14 @@ namespace LibWebApp_L5_v4.Services
 
 
 
-
+        public void EditBook(Book book);
         public void EditBook(int bookId, string? eTitle, string? eAuthor, string? eisbn, string? eCopiesString);
 
         Task<string> EditUserAsyncResult(int userId, string? eName, string? eEmail);
 
 
         public void EditUser(int userId, string? eName, string? eEmail);
+        public void EditUser(User user);
 
     }
 

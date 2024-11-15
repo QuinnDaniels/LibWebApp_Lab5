@@ -546,9 +546,10 @@ namespace LibWebApp_L5_v4.Services
         }
 
 
-        /*
 
-        public void EditUser(User editUser, string? eName, string? eEmail)
+
+
+        public void EditUser(User inuser)
         {
 
             List<User> uList = ReadUsersOld();
@@ -558,22 +559,22 @@ namespace LibWebApp_L5_v4.Services
             //{
             try
             {
-                User? user = uList.FirstOrDefault(u => u.Id == editUser.Id);
+                User? user = uList.FirstOrDefault(u => u.Id == inuser.Id);
 
                 if (user != null)
                 {
-                    Console.Write("Enter new Name (leave blank to keep current): ");
-                    if (!string.IsNullOrEmpty(eName)) user.Name = eName;
+                    //Console.Write("Enter new Name (leave blank to keep current): ");
+                    if (!string.IsNullOrEmpty(inuser.Name)) user.Name = inuser.Name;
 
-                    Console.Write("Enter new Email (leave blank to keep current): ");
-                    if (!string.IsNullOrEmpty(eEmail)) user.Email = eEmail;
+                    //Console.Write("Enter new Email (leave blank to keep current): ");
+                    if (!string.IsNullOrEmpty(inuser.Email)) user.Email = inuser.Email;
 
 
-                    string tID = userId.ToString();
+                    string tID = inuser.Id.ToString();
 
                     string tPath = _UserPath();
                     List<String> lines = new List<String>();
-                    if (File.Exists(tPath)) ;
+                    if (File.Exists(tPath)) 
                     {
                         using (StreamReader reader = new StreamReader(tPath))
                         {
@@ -607,15 +608,16 @@ namespace LibWebApp_L5_v4.Services
                     }
                 }
             }
-            
+            /*    else
+              {
+                    Console.WriteLine("User not found!\n");
+            }*/
             catch (Exception ex)
             {
                 throw new ApplicationException($"An error occurred: {ex.Message}. User not found", ex);
             }
         }
 
-
-*/
 
 
 
@@ -684,6 +686,100 @@ namespace LibWebApp_L5_v4.Services
                 throw new ApplicationException($"An error occurred: {ex.Message}.", ex);
             }
         }
+
+
+
+
+
+
+
+
+        public void EditBook(Book inbook)
+        {
+
+            //bool eCS = int.TryParse(eCopiesString, out int eCopies);
+
+
+            List<Book> bList = ReadBooksOld();
+            //Console.Write("\nEnter User ID to Edit: ");
+
+            try
+            {
+                Book? book = bList.FirstOrDefault(b => b.Id == inbook.Id);
+
+                if (book != null)
+                {
+                    //Console.Write("Enter new Name (leave blank to keep current): ");
+
+                    if (!string.IsNullOrEmpty(inbook.Title )) book.Title = inbook.Title ;
+                    if (!string.IsNullOrEmpty(inbook.Author )) book.Author = inbook.Author ;
+                    if (!string.IsNullOrEmpty(inbook.ISBN )) book.ISBN = inbook.ISBN ;
+                    if (inbook.AvailableCopies > -1) book.AvailableCopies = inbook.AvailableCopies;
+                    
+                    //if (eCS) book.AvailableCopies = eCopies;
+
+
+                    int tID = inbook.Id;
+
+                    string tPath = _BookPath();
+                    List<String> lines = new List<String>();
+                    if (File.Exists(tPath)) 
+                    {
+                        using (StreamReader reader = new StreamReader(tPath))
+                        {
+                            String line;
+
+                            while ((line = reader.ReadLine()) != null)
+                            {
+                                if (line.Contains(","))
+                                {
+                                    String[] split = line.Split(',');
+
+                                    String[] tSplit = book.Title.Split(',');
+
+
+                                    if (split[0].Trim() == tID.ToString())
+                                    {
+                                        int i = 0;
+                                        foreach (string s in tSplit)
+                                        {
+                                            split[i++] = s.Trim();
+                                        }
+                                        split[tSplit.Length + 1] = book.Title;
+                                        split[tSplit.Length + 2] = book.Author;
+                                        split[tSplit.Length + 3] = book.ISBN;
+                                        split[tSplit.Length + 4] = book.AvailableCopies.ToString();
+                                        line = String.Join(",", split);
+                                    }
+                                }
+                                lines.Add(line);
+                            }
+                        }
+
+                        using (StreamWriter writer = new StreamWriter(tPath, false))
+                        {
+                            foreach (String line in lines)
+                                writer.WriteLine(line);
+                        }
+
+                        Console.WriteLine("Book updated successfully!\n");
+                    }
+                }
+            }
+            /*    else
+              {
+                    Console.WriteLine("Book not found!\n");
+            }*/
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred: {ex.Message}. Book not found", ex);
+            }
+        }
+
+
+
+
+
 
 
 

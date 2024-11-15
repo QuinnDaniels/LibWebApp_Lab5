@@ -3,9 +3,17 @@
 @using LibWebApp_L5_v4.Services
 
 @inject ILibServ libby
+@inject NavigationManager nav
 
 <style>
-    .MyHighlightClass:
+    .MyHighlightClass
+    {
+        background-color: darkslateblue;
+        text-decoration-color:azure;
+        color:whitesmoke;
+        text-decoration:underline;
+        
+    }
 
 </style>
 
@@ -13,7 +21,7 @@
 <table>
     <tbody>
         <tr>
-            <td>
+            <td style="height:100px;overflow-y:scroll;">
                 @if (users == null)   { <p>Loading users...</p> }
                     else if (!users.Any())  {  <p>No users available.</p>  }
                     else {
@@ -26,7 +34,7 @@
                                 //string locator = $"editorRow{row.Id}";
 
 
-                                <tr class="@colorClass" style="color:navy; cursor:pointer; text-decoration:underline" @onclick="() => { ReturnRowData(row); SelectedUser = row; }">
+                                <tr class="@colorClass" style="cursor:pointer; /*text-decoration:underline*/" @onclick="() => { ReturnRowData(row); SelectedUser = row; }">
                                         <td>@row.Id</td>
                                         <td>@row.Name</td>
                                         <td>@row.Email</td>
@@ -40,19 +48,19 @@
                 <br />
                 @if (SelectedUser.Id != 0)
                 {
-                    <h3>Selected user #@SelectedUser.Id (@SelectedUser.Name) </h3>
+                    <h3>Selected user #@SelectedUser.Id (  @SelectedUser.Name  ) </h3>
                 }
 
 
                 <br />
                 User Name:
-                <input @bind=UserName />
+                <input @bind=editorUserName placeholder="@SelectedUser.Name"/>
                 <br />
                 User Email:
                 <br />
-                <input @bind=UserEmail />
+                <input @bind=editorUserEmail placeholder="@SelectedUser.Email"/>
                 <br />
-                <button @onclick=SubmitUser class="btn btn-danger">Submit User</button>
+                <button @onclick=Edit class="btn btn-danger">Submit Changes</button>
 
                 <hr />
 
@@ -100,6 +108,7 @@ Book AvailableCopies:
 @code {
     string UserName { get; set; }
     string UserEmail { get; set; }
+    int UserID { get; set; }
 
     string BookTitle { get; set; }
     string BookAuthor { get; set; }
@@ -113,32 +122,74 @@ Book AvailableCopies:
     private List<Book> books;
     private List<User> users;
 
-
+    
     User SelectedUser { get; set; } = new User();
 
-//    private int editorID;
-  //  private string rowClass;
+    //    private int editorID;
+    //  private string rowClass;
 
-    string editorUserName { get; set; }
-    string editorUserEmail { get; set; }
+    string? editorUserName { get; set; }
+    string? editorUserEmail { get; set; }
 
 
     //private List<Model> myModel = new List<Model>();
 
-    private void Edit(int ID)
+    private void Edit()
     {
-        Console.WriteLine("You clicked" + ID);
         //editorID = ID;
         //rowClass = $"editorRow{ID}";
 
+        if (SelectedUser != null)
+        {
+            Console.WriteLine("You want to edit" + SelectedUser.Id);
+            if (!string.IsNullOrEmpty(editorUserName)) SelectedUser.Name = editorUserName;
+            if (!string.IsNullOrEmpty(editorUserEmail)) SelectedUser.Email = editorUserEmail;
+            libby.EditUser(SelectedUser);
+        }
+
+        StateHasChanged();
     }
 
     void ReturnRowData(User user)
     {
+        //editorUserName = String.Empty;
+        //editorUserEmail = String.Empty;
         Console.WriteLine("You clicked" + user.Id);   
         Console.WriteLine("You clicked" + user.Name);
         Console.WriteLine("You clicked" + user.Email);
+        editorUserName = user.Name;
+        editorUserEmail = user.Email;
+        UserID = user.Id;
+
+
+
     }
+
+
+
+
+
+    /// <summary>
+    /// Action for the Cycle Button. Goes to
+    ///
+    /// </summary>
+    /// <seealso href="https://stackoverflow.com/a/72396674"> Forum post </seealso>
+    /// <seealso href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.components.navigationmanager.navigateto?view=aspnetcore-6.0"> Documentation</seealso>
+    public void Cycle()
+    {
+        Edit();
+        nav.NavigateTo("/editUser", true);   // navigate to the same page, 'true' forces browser to reload
+
+        #region unusedCode_Cycle
+        //nav.Refresh();                          //<~~ works in.NET 8.0 but not .NET 6.0
+        //nav.NavigateTo("/addSong");            // <~~ uses blazor's navigate injectible to go to home page after adding
+        #endregion unusedCode_Cycle
+
+    }
+
+
+
+
 
 
 

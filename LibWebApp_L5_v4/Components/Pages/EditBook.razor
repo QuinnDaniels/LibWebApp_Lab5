@@ -1,0 +1,221 @@
+﻿@page "/editBook"
+@using LibWebApp_L5_v4.Models
+@using LibWebApp_L5_v4.Services
+
+@inject ILibServ libby
+@inject NavigationManager nav
+
+<style>
+    .MyHighlightClass
+    {
+        background-color: darkslateblue;
+        text-decoration-color:azure;
+        color:whitesmoke;
+        text-decoration:underline;
+        
+    }
+
+</style>
+
+<h3>EditBooksPage</h3>
+<table>
+    <tbody>
+        <tr>
+            <td style="height:100px;overflow-y:scroll;">
+                @if (books == null)   { <p>Loading books...</p> }
+                    else if (!books.Any())  {  <p>No books available.</p>  }
+                    else {
+                        <table class="table">
+                            <tbody>
+                                @foreach (var row in books)
+                                {
+                                string colorClass = (row == SelectedBook) ? "MyHighlightClass" : "";
+                                
+                                //string locator = $"editorRow{row.Id}";
+
+
+                                <tr class="@colorClass" style="cursor:pointer; /*text-decoration:underline*/" @onclick="() => { ReturnRowData(row); SelectedBook = row; }">
+                                        <td>@row.Id</td>
+                                        <td>@row.Title</td>
+                                        <td>@row.Author</td>
+                                        <td>@row.ISBN</td>
+                                        <td>@row.AvailableCopies</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+            </td>
+            <td style="vertical-align: top">
+                <br />
+                @if (SelectedBook.Id != 0)
+                {
+                    <h3>Selected book</h3>
+                    <br />
+                    <h3>#@SelectedBook.Id (  @SelectedBook.Title  ) </h3>
+                }
+
+
+                <br />
+                Book Title:
+                <input @bind=editorBookTitle placeholder="@SelectedBook.Title"/>
+                <br />
+                Book Author:
+                <br />
+                <input @bind=editorBookAuthor placeholder="@SelectedBook.Author"/>
+                <br />
+                Book ISBN:
+                <br />
+                <input @bind=editorBookISBN placeholder="@SelectedBook.ISBN" />
+                Book Available Copies:
+                <br />
+
+
+                <div class="mb-3">
+                    <label class="form-label">Amount</label>
+                    <input type="number" @bind=stringBookCopies Min="0" step="1" placeholder="@SelectedBook.AvailableCopies" />
+                    <span class="form-text">Tip: The amount must be at least 0.</span>
+                    </div>
+                 <div class="mb-3">Entered Amount: @stringBookCopies</div>
+
+
+                <button @onclick=Edit class="btn btn-danger">Submit Changes</button>
+
+                <hr />
+
+            </td>
+        </tr>
+    </tbody>
+
+</table>
+                @*<input @bind=editorBookCopies placeholder="@SelectedBook.AvailableCopies" />*@
+
+
+
+
+@*
+<h3>AddBookPage</h3>
+<br />
+Book Title:
+<input @bind=BookTitle />
+<br />
+Book Author:
+<input @bind=BookAuthor />
+<br />
+Book ISBN:
+<input @bind=BookISBN />
+<br />
+
+Book AvailableCopies:
+<input @bind=BookAvailableCopies />
+<br />
+
+
+
+<button @onclick=SubmitBook class="btn btn-danger">Submit Book</button>
+*@
+
+
+
+
+@code {
+    string UserName { get; set; }
+    string UserEmail { get; set; }
+
+    int    BookID { get; set; }
+
+    string BookTitle { get; set; }
+    string BookAuthor { get; set; }
+    string BookISBN { get; set; }
+
+    string stringBookCopies { get; set; }
+
+
+    //private int? amount { get; set; }
+
+
+
+    private List<Book> books;
+
+
+    Book SelectedBook { get; set; } = new Book();
+
+    //    private int editorID;
+    //  private string rowClass;
+
+    string? editorBookTitle  { get; set; }
+    string? editorBookAuthor { get; set; }
+    string? editorBookISBN   { get; set; }
+    int     editorBookCopies { get; set; }
+
+
+    //private List<Model> myModel = new List<Model>();
+
+    private void Edit()
+    {
+        //editorID = ID;
+        //rowClass = $"editorRow{ID}";
+
+        if (SelectedBook != null)
+        {
+            int bc = 0;
+            Console.WriteLine("You want to edit" + SelectedBook.Id);
+            if (!string.IsNullOrEmpty(editorBookTitle   )) SelectedBook.Title           = editorBookTitle   ;
+            if (!string.IsNullOrEmpty(editorBookAuthor  )) SelectedBook.Author          = editorBookAuthor  ;
+            if (!string.IsNullOrEmpty(editorBookISBN    )) SelectedBook.ISBN            = editorBookISBN    ;
+            if (Int32.TryParse(stringBookCopies, out bc))
+            {
+                SelectedBook.AvailableCopies = bc;
+            }
+            libby.EditBook(SelectedBook);
+        }
+
+        StateHasChanged();
+    }
+
+    void ReturnRowData(Book book)
+    {
+
+        Console.WriteLine("You clicked" + book.Id);   
+        Console.WriteLine("You clicked" + book.Title);
+        Console.WriteLine("You clicked" + book.Author);
+        Console.WriteLine("You clicked" + book.ISBN);
+        Console.WriteLine("You clicked" + book.AvailableCopies);
+
+        editorBookTitle = book.Title;
+        editorBookAuthor = book.Author;
+        editorBookISBN = book.ISBN;
+        stringBookCopies = book.AvailableCopies.ToString();
+
+
+        BookID = book.Id;
+
+
+
+
+
+
+    }
+
+    
+    
+ 
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        books = await libby.ReadBooksOldAsync();
+    }
+
+
+
+
+
+
+
+    
+
+    }
+
+
+}

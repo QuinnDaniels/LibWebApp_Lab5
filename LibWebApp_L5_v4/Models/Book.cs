@@ -36,7 +36,7 @@ namespace LibWebApp_L5_v4.Models{
         public int AvailableCopies { get; set; }
 
 
-
+        
 
 
         //public Book(int id, string title, string author, string iSBN, int availableCopies)
