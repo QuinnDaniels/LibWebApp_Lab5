@@ -953,5 +953,205 @@ namespace LibWebApp_L5_v4.Services
 
 
 
+
+
+        /*------------------------------------------------------------------------*/
+
+
+        public void BorrowBook(Book inbook, User inuser)
+        {
+
+            //ListBooks();
+            List<Book> bList = ReadBooksOld();
+            List<User> uList = ReadUsersOld();
+
+            //Console.Write("\nEnter Book ID to Borrow: ");
+
+            //if (int.TryParse(Console.ReadLine(), out int bookId))
+            //{
+            try 
+            { 
+                Book? book = bList.FirstOrDefault(b => b.Id == inbook.Id);
+
+                if (book != null && book.AvailableCopies > 0 && bList.Count(b => b.Id == inbook.Id) > 0)
+                {
+
+                    //ListUsers();
+                    Console.Write("\nEnter User ID who is borrowing the book: ");
+                    
+
+                    try
+                    {
+                        User? user = uList.FirstOrDefault(u => u.Id == inuser.Id);
+                        //if (int.TryParse(Console.ReadLine(), out int userId))
+                        //{
+
+                            //User user = users.FirstOrDefault(u => u.Id == userId);
+
+                            if (user != null && uList.Count(u => u.Id == inuser.Id) > 0) //)
+                            {
+                                if (!borrowedBooks.ContainsKey(user))
+                                {
+                                    borrowedBooks[user] = new List<Book>();
+                                }
+                                borrowedBooks[user].Add(book);
+
+                                book.AvailableCopies = book.AvailableCopies - 1;
+
+
+                            /*----------*
+                             *
+                             /*
+                            // only remove book if no more copies are available
+                            if (book.AvailableCopies <= 0)
+                            {
+                                books.Remove(book);
+                            }
+                             */
+                            /*-----------*/
+
+                            EditBook(book); // update the AvailableCopies
+
+
+
+                                Console.WriteLine("Book borrowed successfully!\n");
+                            //}
+                            //else
+                            //{
+                            //    Console.WriteLine("User not found!\n");
+                            //}
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid input!\n");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ApplicationException($"An error occurred: {ex.Message}. User not found", ex);
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("Book not found or no available copies!\n");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred: {ex.Message}. Book not found", ex);
+            }
+            //}
+           //else
+            //{
+            //    Console.WriteLine("Invalid input!\n");
+            //}
+        }
+
+
+        /*
+        static void ReturnBook()
+        {
+
+            ListBorrowedBooks();
+            Console.Write("\nEnter User ID to return a book for: ");
+
+            if (int.TryParse(Console.ReadLine(), out int userId))
+            {
+
+                User user = users.FirstOrDefault(u => u.Id == userId);
+
+                if (user != null && borrowedBooks.ContainsKey(user) && borrowedBooks[user].Count > 0)
+                {
+
+                    Console.WriteLine("Borrowed Books:");
+
+                    for (int i = 0; i < borrowedBooks[user].Count; i++)
+                    {
+                        Console.WriteLine($"{i + 1}. {borrowedBooks[user][i].Id}. {borrowedBooks[user][i].Title} by {borrowedBooks[user][i].Author} (ISBN: {borrowedBooks[user][i].ISBN})");
+                    }
+
+                    Console.Write("\nEnter the number of the book to return: ");
+
+                    if (int.TryParse(Console.ReadLine(), out int bookNumber) && bookNumber >= 1 && bookNumber <= borrowedBooks[user].Count)
+                    {
+
+                        Book bookToReturn = borrowedBooks[user][bookNumber - 1];
+
+                        borrowedBooks[user].RemoveAt(bookNumber - 1);
+
+                        bool bookFound = false;
+                        foreach (Book b in books)
+                        {
+                            // see if there exists a matching book
+                            if (b.Title == bookToReturn.Title && b.Author == bookToReturn.Author && b.ISBN == bookToReturn.ISBN)
+                            {
+                                b.AvailableCopies += 1;
+                                bookFound = true;
+                            }
+                        }
+                        if (bookFound == false)
+                        {
+                            foreach (Book b in books)
+                            {
+                                if (b.Id == bookToReturn.Id)
+                                {
+                                    bookToReturn.Id = books.Any() ? books.Max(b => b.Id) + 1 : 1;
+                                    Console.WriteLine("bookId conflict! updated returning bookID");
+                                }
+                            }
+
+                            bookToReturn.AvailableCopies = 1;
+                            books.Add(bookToReturn);
+                        }
+
+                        Console.WriteLine("Book returned successfully!\n");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid input!\n");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("User not found or no borrowed books!\n");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid input!\n");
+            }
+        }
+
+        static void ListBorrowedBooks()
+        {
+
+            Console.WriteLine("\nBorrowed Books:");
+
+            foreach (var entry in borrowedBooks)
+            {
+                Console.WriteLine($"User: {entry.Key.Name}");
+
+                foreach (var book in entry.Value)
+                {
+                    Console.WriteLine($"{book.Title} by {book.Author} (ISBN: {book.ISBN})");
+                }
+
+                Console.WriteLine();
+            }
+        }
+         */
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }

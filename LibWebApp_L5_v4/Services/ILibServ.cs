@@ -56,6 +56,11 @@ namespace LibWebApp_L5_v4.Services
         public void EditUser(int userId, string? eName, string? eEmail);
         public void EditUser(User user);
 
+
+
+
+        public void BorrowBook(Book inbook, User inuser);
+
     }
 
 
