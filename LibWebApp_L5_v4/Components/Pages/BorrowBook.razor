@@ -1,0 +1,430 @@
+﻿@page "/borrow"
+@using LibWebApp_L5_v4.Models
+@using LibWebApp_L5_v4.Services
+
+@inject ILibServ libby
+@inject NavigationManager nav
+
+<style>
+    .MyHighlightClass
+    {
+        background-color: darkslateblue;
+        text-decoration-color:azure;
+        color:whitesmoke;
+        text-decoration:underline;
+        
+    }
+
+</style>
+
+<h3>EditUserPage</h3>
+<table>
+    <tbody>
+        <tr>
+            <!--    USERS TABLE    -->
+            <td style="height:100px;overflow-y:scroll;">
+                @if (users == null)   { <p>Loading users...</p> }
+                    else if (!users.Any())  {  <p>No users available.</p>  }
+                    else {
+                        <table class="table">
+                            <tbody>
+                                @foreach (var row in users)
+                                {
+                                string colorClass = (row == SelectedUser) ? "MyHighlightClass" : "";
+                                
+                                //string locator = $"editorRow{row.Id}";
+
+
+                                <tr class="@colorClass" style="cursor:pointer; /*text-decoration:underline*/" @onclick="() => { ReturnRowData(row); SelectedUser = row; }">
+                                        <td>@row.Id</td>
+                                        <td>@row.Name</td>
+                                        <td>@row.Email</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+            </td>
+
+
+
+            <!--  BOOKS TABLE  -->
+            <td style="height:100px;overflow-y:scroll;">
+                @if (books == null)
+                {
+                    <p>Loading books...</p>
+                }
+                else if (!books.Any())
+                {
+                      <p>No books available.</p>
+                }
+                else
+                {
+                    <table class="table">
+                        <tbody>
+                            @foreach (var row in books)
+                            {
+                                string colorClass = (row == SelectedBook) ? "MyHighlightClass" : "";
+
+                                //string locator = $"editorRow{row.Id}";
+
+
+                                <tr class="@colorClass" style="cursor:pointer; /*text-decoration:underline*/" @onclick="() => { ReturnRowData(row); SelectedBook = row; }">
+                                    <td>@row.Id</td>
+                                    <td>@row.Title</td>
+                                    <td>@row.Author</td>
+                                    <td>@row.ISBN</td>
+                                    <td>@row.AvailableCopies</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </td>
+
+
+
+
+
+
+            <td style="vertical-align: top">
+                <br />
+                @if (SelectedUser.Id != 0)
+                {
+                    <h3>Selected user #@SelectedUser.Id (  @SelectedUser.Name  ) </h3>
+                }
+
+
+                <br />
+                User Name:
+                <input @bind=editorUserName placeholder="@SelectedUser.Name"/>
+                <br />
+                User Email:
+                <br />
+                <input @bind=editorUserEmail placeholder="@SelectedUser.Email"/>
+                <br />
+
+
+
+
+                @if (SelectedBook.Id != 0)
+                {
+                    <h3>Selected book</h3>
+                    <br />
+                    <h3>#@SelectedBook.Id (  @SelectedBook.Title  ) </h3>
+                }
+
+
+                <br />
+                Book Title:
+                <input @bind=editorBookTitle placeholder="@SelectedBook.Title" />
+                <br />
+                Book Author:
+                <br />
+                <input @bind=editorBookAuthor placeholder="@SelectedBook.Author" />
+                <br />
+                Book ISBN:
+                <br />
+                <input @bind=editorBookISBN placeholder="@SelectedBook.ISBN" />
+                Book Available Copies:
+                <br />
+                <div class="mb-3">
+                    <label class="form-label">Amount</label>
+                    <input type="number" @bind=stringBookCopies Min="0" step="1" placeholder="@SelectedBook.AvailableCopies" />
+                    <span class="form-text">Tip: The amount must be at least 0.</span>
+                </div>
+                <div class="mb-3">Entered Amount: @stringBookCopies</div>
+
+
+
+
+
+
+                <button @onclick=Edit class="btn btn-danger">Submit Changes</button>
+
+                <hr />
+
+            </td>
+        </tr>
+    </tbody>
+
+</table>
+
+
+
+
+@*
+<h3>AddBookPage</h3>
+<br />
+Book Title:
+<input @bind=BookTitle />
+<br />
+Book Author:
+<input @bind=BookAuthor />
+<br />
+Book ISBN:
+<input @bind=BookISBN />
+<br />
+
+Book AvailableCopies:
+<input @bind=BookAvailableCopies />
+<br />
+
+
+
+<button @onclick=SubmitBook class="btn btn-danger">Submit Book</button>
+*@
+
+
+@*<!--
+<input @bind=OptionText2 />
+<br />
+<input @bind=OptionText3 />
+<br />
+<input @bind=OptionText4 />
+<br />
+-->*@
+
+@code {
+    string UserName { get; set; }
+    string UserEmail { get; set; }
+    int UserID { get; set; }
+
+    string BookTitle { get; set; }
+    string BookAuthor { get; set; }
+    string BookISBN { get; set; }
+   @*
+   string BookAvailableCopies { get; set; }
+   *@
+
+
+
+
+
+
+    int BookID { get; set; }
+
+
+    string stringBookCopies { get; set; }
+
+    Book SelectedBook { get; set; } = new Book();
+
+    //    private int editorID;
+    //  private string rowClass;
+
+    string? editorBookTitle { get; set; }
+    string? editorBookAuthor { get; set; }
+    string? editorBookISBN { get; set; }
+    int editorBookCopies { get; set; }
+
+
+
+
+
+
+    private List<Book> books;
+    private List<User> users;
+
+    
+    User SelectedUser { get; set; } = new User();
+
+    //    private int editorID;
+    //  private string rowClass;
+
+    string? editorUserName { get; set; }
+    string? editorUserEmail { get; set; }
+
+
+    //private List<Model> myModel = new List<Model>();
+
+    private void Edit()
+    {
+        //editorID = ID;
+        //rowClass = $"editorRow{ID}";
+
+        if (SelectedUser != null)
+        {
+            Console.WriteLine("You want to edit" + SelectedUser.Id);
+            if (!string.IsNullOrEmpty(editorUserName)) SelectedUser.Name = editorUserName;
+            if (!string.IsNullOrEmpty(editorUserEmail)) SelectedUser.Email = editorUserEmail;
+            libby.EditUser(SelectedUser);
+        }
+
+        StateHasChanged();
+    }
+
+    void ReturnRowData(User user)
+    {
+        //editorUserName = String.Empty;
+        //editorUserEmail = String.Empty;
+        Console.WriteLine("You clicked" + user.Id);   
+        Console.WriteLine("You clicked" + user.Name);
+        Console.WriteLine("You clicked" + user.Email);
+        editorUserName = user.Name;
+        editorUserEmail = user.Email;
+        UserID = user.Id;
+
+
+
+    }
+
+
+
+    void ReturnRowData(Book book)
+    {
+
+        Console.WriteLine("You clicked" + book.Id);
+        Console.WriteLine("You clicked" + book.Title);
+        Console.WriteLine("You clicked" + book.Author);
+        Console.WriteLine("You clicked" + book.ISBN);
+        Console.WriteLine("You clicked" + book.AvailableCopies);
+
+        editorBookTitle = book.Title;
+        editorBookAuthor = book.Author;
+        editorBookISBN = book.ISBN;
+        stringBookCopies = book.AvailableCopies.ToString();
+
+
+        BookID = book.Id;
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    /// <summary>
+    /// Action for the Cycle Button. Goes to
+    ///
+    /// </summary>
+    /// <seealso href="https://stackoverflow.com/a/72396674"> Forum post </seealso>
+    /// <seealso href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.components.navigationmanager.navigateto?view=aspnetcore-6.0"> Documentation</seealso>
+    public void Cycle()
+    {
+        Edit();
+        nav.NavigateTo("/editUser", true);   // navigate to the same page, 'true' forces browser to reload
+
+        #region unusedCode_Cycle
+        //nav.Refresh();                          //<~~ works in.NET 8.0 but not .NET 6.0
+        //nav.NavigateTo("/addSong");            // <~~ uses blazor's navigate injectible to go to home page after adding
+        #endregion unusedCode_Cycle
+
+    }
+
+
+
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //    books = await libService.GetAllBooksAsync();
+        users = await libby.ReadUsersOldAsync();
+        books = await libby.ReadBooksOldAsync();
+    }
+
+
+
+    public void SubmitUser()
+    {
+
+        //int u = userInc();
+
+        List<User> adder = new List<User>
+        {
+            //make new User
+            new User
+                {
+                    Id = libby.userInc(),
+                    Name = UserName,
+                    Email = UserEmail
+                },
+        };
+
+
+        /*convert to a new function:    libby.makeUser(string uName, string uEmail)*/
+
+
+
+@*
+        Question toAdd = new Question
+            {
+                QuestionText = QuestionText,
+                Options = new Dictionary<string, bool>()
+            };
+*@
+
+@*        //add options
+        toAdd.Options[OptionText1] = true;
+        toAdd.Options[OptionText2] = false;
+        toAdd.Options[OptionText3] = false;
+        toAdd.Options[OptionText4] = false;
+
+
+        //shuffle
+        toAdd.ShuffleOptions();
+
+
+        //add to service
+        QuizMgr.AddQuestion(toAdd);
+*@
+
+
+        //add to service
+        libby.AppendNewUser(adder);
+
+
+        @*
+        //clear input boxes
+        QuestionText = String.Empty;
+        OptionText1 = String.Empty;
+        OptionText2 = String.Empty;
+        OptionText3 = String.Empty;
+        OptionText4 = String.Empty;
+        *@
+
+        //clear input boxes
+        UserName = String.Empty;
+        UserEmail = String.Empty;
+
+
+    }
+
+    public void SubmitBook()
+    {
+        
+        List<Book> adder = new List<Book>
+            {
+                //make new User
+                new Book
+                    {
+                        Id = libby.bookInc(),
+                        Title = BookTitle,
+                        Author = BookAuthor,
+                        ISBN = BookISBN,
+                        AvailableCopies = 1 @*BookAvailableCopies*@
+
+                    },
+            };
+
+        //add to service
+        libby.AppendNewBook(adder);
+
+        //clear input boxes
+        UserName = String.Empty;
+        UserEmail = String.Empty;
+    }
+
+
+}
