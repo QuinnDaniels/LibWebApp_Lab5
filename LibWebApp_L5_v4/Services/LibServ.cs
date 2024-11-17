@@ -13,7 +13,8 @@ using System.Globalization;
 using CsvHelper.TypeConversion;
 using System.IO;
 using System.Diagnostics;
-
+using System;
+using Microsoft.VisualBasic.FileIO;
 
 
 namespace LibWebApp_L5_v4.Services
@@ -711,10 +712,10 @@ namespace LibWebApp_L5_v4.Services
                 {
                     //Console.Write("Enter new Name (leave blank to keep current): ");
 
-                    if (!string.IsNullOrEmpty(inbook.Title )) book.Title = inbook.Title ;
+                    if (!string.IsNullOrEmpty(inbook.Title )) book.Title = inbook.Title ;       //book+inbook==
                     if (!string.IsNullOrEmpty(inbook.Author )) book.Author = inbook.Author ;
                     if (!string.IsNullOrEmpty(inbook.ISBN )) book.ISBN = inbook.ISBN ;
-                    if (inbook.AvailableCopies > -1) book.AvailableCopies = inbook.AvailableCopies;
+                    if (inbook.AvailableCopies > -1) book.AvailableCopies = inbook.AvailableCopies; //inbook2, book1 --> book2
                     
                     //if (eCS) book.AvailableCopies = eCopies;
 
@@ -723,38 +724,111 @@ namespace LibWebApp_L5_v4.Services
 
                     string tPath = _BookPath();
                     List<String> lines = new List<String>();
-                    if (File.Exists(tPath)) 
-                    {
-                        using (StreamReader reader = new StreamReader(tPath))
+
+
+                    if (File.Exists(tPath))                     // move into prev conditional check
+                    {                                               // book and inbook dissappear??
+
+                        String[] tSplit = book.Title.Split(',');
+
+
+
+                        using (TextFieldParser csvParser = new TextFieldParser(tPath))
                         {
-                            String line;
+                            //csvParser.CommentTokens = new string[] { "#" };
+                            csvParser.SetDelimiters(new string[] { "," });
+                            csvParser.HasFieldsEnclosedInQuotes = false; //true;
 
-                            while ((line = reader.ReadLine()) != null)
+                            // Skip the row with the column names
+                            //csvParser.ReadLine();
+                            string line ="";
+                            //bool matchFound = false;
+                            while (!csvParser.EndOfData ) //&& !matchFound)
                             {
-                                if (line.Contains(","))
+                                // Read current line fields, pointer moves to the next line.
+                                string[] fields = csvParser.ReadFields();
+                                List<string> strings = new List<string>();
+
+                                if (fields[0].Trim() == tID.ToString())
                                 {
-                                    String[] split = line.Split(',');
+                                    int i = 1;
+                                    string tits = String.Join(",", tSplit);
+                                    /*
+                                    //if (tSplit.Length > 1)
+                                    //{
+                                    //                                        foreach (string s in tSplit)
+                                    //                                       {
+                                    //                                          fields[i] = s.Trim();
+                                    //tits = tits + "," + s.Trim();
+                                    //                                      }
 
-                                    String[] tSplit = book.Title.Split(',');
+                                    //}
+                                    //else { tits = book.Title; }
 
+                                    //                                    fields[tSplit.Length + 1] = tits; //book.Title;
+                                    //                                    fields[tSplit.Length + 2] = book.Author;
+                                    //                                    fields[tSplit.Length + 3] = book.ISBN;
+                                    //                                    fields[tSplit.Length + 4] = $"{book.AvailableCopies}"; //.ToString(); // caught here
 
-                                    if (split[0].Trim() == tID.ToString())
-                                    {
-                                        int i = 0;
-                                        foreach (string s in tSplit)
-                                        {
-                                            split[i++] = s.Trim();
-                                        }
-                                        split[tSplit.Length + 1] = book.Title;
-                                        split[tSplit.Length + 2] = book.Author;
-                                        split[tSplit.Length + 3] = book.ISBN;
-                                        split[tSplit.Length + 4] = book.AvailableCopies.ToString();
-                                        line = String.Join(",", split);
-                                    }
+                                    //line = String.Join(",", fields);
+                                    //matchFound = true;
+                                    */
+                                    
+                                    
+                                    line = $"{fields[0].Trim()},{tits},{book.Author},{book.ISBN},{book.AvailableCopies}"; // I AM SO UPSET THAT THIS WORKS
+
                                 }
+
+                                else { line = String.Join(",", fields); }
                                 lines.Add(line);
+
+
+
+
                             }
                         }
+
+
+
+
+                        /*
+
+                            using (StreamReader reader = new StreamReader(tPath))
+                            {
+
+                                foreach (string liner in reader.ReadLine())
+                                { 
+                                String line = liner.ToString();
+
+     //                           }
+     //
+     //                           while ((line = reader.ReadLine()) != null) //only gets line 1
+     //                           {
+                                    if (line.Contains(","))
+                                    {
+                                        String[] split = line.Split(',');
+
+
+
+                                        if (split[0].Trim() == tID.ToString())
+                                        {
+                                            int i = 0;
+                                            foreach (string s in tSplit)
+                                            {
+                                                split[i++] = s.Trim();
+                                            }
+                                            split[tSplit.Length + 1] = book.Title;
+                                            split[tSplit.Length + 2] = book.Author;
+                                            split[tSplit.Length + 3] = book.ISBN;
+                                            split[tSplit.Length + 4] = book.AvailableCopies.ToString();
+                                            line = String.Join(",", split);
+                                        }
+                                    }
+                                    lines.Add(line);
+                                }
+                            }
+                        */
+
 
                         using (StreamWriter writer = new StreamWriter(tPath, false))
                         {
@@ -763,13 +837,19 @@ namespace LibWebApp_L5_v4.Services
                         }
 
                         Console.WriteLine("Book updated successfully!\n");
+
+
                     }
+
+
+
+
+
+
+
+
                 }
             }
-            /*    else
-              {
-                    Console.WriteLine("Book not found!\n");
-            }*/
             catch (Exception ex)
             {
                 throw new ApplicationException($"An error occurred: {ex.Message}. Book not found", ex);
