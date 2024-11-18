@@ -43,6 +43,11 @@ namespace LibWebApp_L5_v4.Services
 
         public void AppendNewUser(List<User> user);
         public void AppendNewBook(List<Book> book);
+        public void AppendNewBook(Book book);
+        public void AppendNewUser(User user);
+        public void AppendNewUser(string UserName, string UserEmail);
+        public void AppendNewBook(string inTitle, string inAuthor, string inISBN, int? inCopies);
+
 
 
 
@@ -60,6 +65,14 @@ namespace LibWebApp_L5_v4.Services
 
 
         public void BorrowBook(Book inbook, User inuser);
+        public void ListBorrowedBooks();
+        public List<User> ReadBorrowUsers();
+        public List<Book> ReadBorrowedBooksByUser(User? user);
+        Task<List<Book>> AsyncReadBorrowedBooksByUser(User? user);
+
+
+        public void ReturnBook(User? inuser, Book? inbook);
+
 
     }
 

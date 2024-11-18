@@ -1,4 +1,4 @@
-﻿@page "/borrow"
+﻿@page "/borrowMenu"
 @using LibWebApp_L5_v4.Models
 @using LibWebApp_L5_v4.Services
 
@@ -15,27 +15,40 @@
         
     }
 
+
+    .flex_container {
+        display: flex; /* or inline-flex */
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: flex-start;
+        width:100%;
+    }
+
+
 </style>
 
-<h3>Borrow Book</h3>
-<table>
-    <tbody>
-        <tr>
-            <!--    USERS TABLE    -->
-            <td style="height:500px;overflow-y:scroll;display:block;">
-                @if (users == null)   { <p>Loading users...</p> }
-                    else if (!users.Any())  {  <p>No users available.</p>  }
+<h3>EditUserPage</h3>
+
+    
+        
+            
+           <div class="flex_container">
+                <!--    USERS TABLE    -->
+                <div style="height:500px;overflow-y:scroll;">
+                @if (bb_users == null)   { <p>Loading users...</p> }
+                    else if (!bb_users.Any())  {  <p>No users available.</p>  }
                     else {
                         <table class="table">
                             <tbody>
-                                @foreach (var row in users)
+                                @foreach (var row in bb_users)
                                 {
                                 string colorClass = (row == SelectedUser) ? "MyHighlightClass" : "";
                                 
                                 //string locator = $"editorRow{row.Id}";
 
 
-                                <tr class="@colorClass" style="cursor:pointer; /*text-decoration:underline*/" @onclick="() => { ReturnRowData(row); SelectedUser = row; }">
+                                <tr class="@colorClass" style="cursor:pointer; /*text-decoration:underline*/" @onclick="@(e => RowClick(e, row))">
+                                                                                <!--https://learn.microsoft.com/en-us/answers/questions/522640/multiple-tables-on-a-single-blazor-page-->
                                         <td>@row.Id</td>
                                         <td>@row.Name</td>
                                         <td>@row.Email</td>
@@ -44,50 +57,43 @@
                             </tbody>
                         </table>
                     }
-            </td>
+            </div>
+
+                <!--  BOOKS TABLE  -->
+                <div style="height:5500px;overflow-y:scroll;">
+                    @if (bb_books == null)
+                    {
+                        <p>Loading books...</p>
+                    }
+                    else if (!bb_books.Any())
+                    {
+                          <p>No books available.</p>
+                    }
+                    else
+                    {
+                        <table class="table">
+                            <tbody>
+                                @foreach (var row in bb_books)
+                                {
+                                    string colorClass = (row == SelectedBook) ? "MyHighlightClass" : "";
+
+                                    //string locator = $"editorRow{row.Id}";
 
 
+                                    <tr class="@colorClass" style="cursor:pointer; /*text-decoration:underline*/" @onclick="() => { ReturnRowData(row); SelectedBook = row;}">
+                                        <td>@row.Id</td>
+                                        <td>@row.Title</td>
+                                        <td>@row.Author</td>
+                                        <td>@row.ISBN</td>
+                                        <td>@row.AvailableCopies</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
 
-            <!--  BOOKS TABLE  -->
-            <td style="height:5500px;overflow-y:scroll;">
-                @if (books == null)
-                {
-                    <p>Loading books...</p>
-                }
-                else if (!books.Any())
-                {
-                      <p>No books available.</p>
-                }
-                else
-                {
-                    <table class="table">
-                        <tbody>
-                            @foreach (var row in books)
-                            {
-                                string colorClass = (row == SelectedBook) ? "MyHighlightClass" : "";
-
-                                //string locator = $"editorRow{row.Id}";
-
-
-                                <tr class="@colorClass" style="cursor:pointer; /*text-decoration:underline*/" @onclick="() => { ReturnRowData(row); SelectedBook = row; }">
-                                    <td>@row.Id</td>
-                                    <td>@row.Title</td>
-                                    <td>@row.Author</td>
-                                    <td>@row.ISBN</td>
-                                    <td>@row.AvailableCopies</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
-            </td>
-
-
-
-
-
-
-            <td style="vertical-align: top">
+                <div style="vertical-align: top">
                 <br />
                 @if (SelectedUser.Id != 0)
                 {
@@ -97,11 +103,11 @@
 
                 <br />
                 User Name:
-                <input @bind=editorUserName placeholder="@SelectedUser.Name"/>
+                <input @bind=editorUserName placeholder="@SelectedUser.Name"disabled/>
                 <br />
                 User Email:
                 <br />
-                <input @bind=editorUserEmail placeholder="@SelectedUser.Email"/>
+                <input @bind=editorUserEmail placeholder="@SelectedUser.Email"disabled/>
                 <br />
 
 
@@ -114,53 +120,61 @@
                     <h3>#@SelectedBook.Id (  @SelectedBook.Title  ) </h3>
 
 
-                    <br />
-                    <p>Book Title:</p>
-                    <input @bind=editorBookTitle placeholder="@SelectedBook.Title" disabled />
-                    <br />
-                    <p>Book Author:</p>
-                    <br />
-                    <input @bind=editorBookAuthor placeholder="@SelectedBook.Author" disabled />
-                    <br />
-                    <p>Book ISBN:</p>
-                    <br />
-                    <input @bind=editorBookISBN placeholder="@SelectedBook.ISBN" disabled />
-                    <p>Book Available Copies:</p>
-                    <br />
-                    <div class="mb-3">
-                        <label class="form-label">Amount</label>
-                        <input type="number" @bind=stringBookCopies Min="0" step="1" placeholder="@SelectedBook.AvailableCopies" disabled />
-                        <span class="form-text">Tip: The amount must be at least 0.</span>
-                    </div>
-                    <div class="mb-3">Entered Amount: @stringBookCopies</div>
+                <br />
+                <p>Book Title:</p>
+                <input @bind=editorBookTitle placeholder="@SelectedBook.Title" disabled/>
+                <br />
+                <p>Book Author:</p>
+                <br />
+                <input @bind=editorBookAuthor placeholder="@SelectedBook.Author" disabled/>
+                <br />
+                <p>Book ISBN:</p>
+                <br />
+                <input @bind=editorBookISBN placeholder="@SelectedBook.ISBN" disabled/>
+                <p>Book Available Copies:</p>
+                <br />
+                <div class="mb-3">
+                    <label class="form-label">Amount</label>
+                    <input type="number" @bind=stringBookCopies Min="0" step="1" placeholder="@SelectedBook.AvailableCopies" disabled/>
+                    <span class="form-text">Tip: The amount must be at least 0.</span>
+                </div>
+                <div class="mb-3">Entered Amount: @stringBookCopies</div>
 
                 }
                 @if (SelectedBook == null)
                 {
-                    <p>Please select a book</p>
-                    <p>book loading...</p>
+                    <p>loading...</p>
                 }
 
 
 
                 @if (SelectedBook == null)
                 {
-
-                    <button @onclick=Cycle class="btn btn-danger" disabled>Borrow Book</button>
+                    
+                    <button @onclick=Cycle class="btn btn-danger" disabled>Return Book</button>
                 }
                 @if (SelectedBook != null)
                 {
 
-                    <button @onclick=Cycle class="btn btn-danger">Borrow Book</button>
+                    <button @onclick=Cycle class="btn btn-danger" >Return Book</button>
                 }
 
                 <hr />
 
-            </td>
-        </tr>
-    </tbody>
+            </div>
+           </div> 
+            
+            
+            
 
-</table>
+
+
+
+
+
+
+
+
 
 
 
@@ -219,7 +233,7 @@ Book AvailableCopies:
 
     string stringBookCopies { get; set; }
 
-    Book SelectedBook { get; set; } = new Book();
+    Book? SelectedBook { get; set; } = new Book();
 
     //    private int editorID;
     //  private string rowClass;
@@ -236,6 +250,9 @@ Book AvailableCopies:
 
     private List<Book> books;
     private List<User> users;
+
+    private List<Book> bb_books;
+    private List<User> bb_users;
 
 
     User SelectedUser { get; set; } = new User();
@@ -261,7 +278,13 @@ Book AvailableCopies:
         editorUserEmail = user.Email;
         UserID = user.Id;
 
+        //SelectedBook = null;
+
+
     }
+
+
+
 
 
 
@@ -286,7 +309,13 @@ Book AvailableCopies:
 
 
 
-
+    private async Task RowClick(MouseEventArgs e, User user)
+    {
+        SelectedUser = user;
+        ReturnRowData(user);
+        SelectedBook = null;
+        bb_books = await libby.AsyncReadBorrowedBooksByUser(user);    
+    }
 
 
 
@@ -301,7 +330,7 @@ Book AvailableCopies:
     public void Cycle()
     {
         Edit();
-        nav.NavigateTo("/borrow", true);   // navigate to the same page, 'true' forces browser to reload
+        nav.NavigateTo("/borrowMenu", true);   // navigate to the same page, 'true' forces browser to reload
 
         #region unusedCode_Cycle
         //nav.Refresh();                          //<~~ works in.NET 8.0 but not .NET 6.0
@@ -312,7 +341,7 @@ Book AvailableCopies:
 
 
 
-
+    //private void NotifyStateChanged() => OnChange?.Invoke();
 
 
 
@@ -322,9 +351,20 @@ Book AvailableCopies:
         //    books = await libService.GetAllBooksAsync();
         users = await libby.ReadUsersOldAsync();
         books = await libby.ReadBooksOldAsync();
+
+        bb_users = libby.ReadBorrowUsers();
     }
 
 
+   // protected override async Task OnAfterRenderAsync(bool firstRender)
+   // {
+   //     if (firstRender) { }
+   //     else
+   //     {
+   //         
+   //     }
+   //
+   // }
 
     public void SubmitUser()
     {
@@ -372,7 +412,7 @@ Book AvailableCopies:
 
             //libby.EditBook(SelectedBook);
 
-            libby.BorrowBook(SelectedBook, SelectedUser);
+            libby.ReturnBook(SelectedUser, SelectedBook);
         }
 
         StateHasChanged();

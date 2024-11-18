@@ -15,6 +15,8 @@ using System.IO;
 using System.Diagnostics;
 using System;
 using Microsoft.VisualBasic.FileIO;
+using LibWebApp_L5_v4.Components;
+using System.Reflection.Metadata;
 
 
 namespace LibWebApp_L5_v4.Services
@@ -438,6 +440,68 @@ namespace LibWebApp_L5_v4.Services
         }
 
 
+        public void AppendNewUser(User user)
+        {
+            List<User> adder = new List<User>();
+            adder.Add(user);
+
+
+            // Append to the file.
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                // Don't write the header again.
+                HasHeaderRecord = false,
+            };
+            using (var stream = File.Open(_UserPath(), FileMode.Append))           // ("path\\to\\file.csv", FileMode.Append))
+            using (var writer = new StreamWriter(stream))
+            using (var csv = new CsvWriter(writer, config))
+            {
+                csv.WriteRecords(adder);
+            }
+
+
+        }
+
+
+
+        public void AppendNewUser(string UserName, string UserEmail)
+        {
+            List<User> adder = new List<User>
+            {
+                //make new User
+                new User
+                    {
+                        Id = userInc(),
+                        Name = UserName,
+                        Email = UserEmail
+                    },
+            };
+
+            //List<User> adder = new List<User>();
+            //adder.Add(user);
+
+
+            // Append to the file.
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                // Don't write the header again.
+                HasHeaderRecord = false,
+            };
+            using (var stream = File.Open(_UserPath(), FileMode.Append))           // ("path\\to\\file.csv", FileMode.Append))
+            using (var writer = new StreamWriter(stream))
+            using (var csv = new CsvWriter(writer, config))
+            {
+                csv.WriteRecords(adder);
+            }
+
+
+        }
+
+
+
+
+
+
 
         public void AppendNewBook(List<Book> book)
         {
@@ -456,6 +520,68 @@ namespace LibWebApp_L5_v4.Services
 
 
         }
+
+
+        public void AppendNewBook(Book book)
+        {
+            List<Book> adder = new List<Book>();
+            adder.Add(book);
+
+            // Append to the file.
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                // Don't write the header again.
+                HasHeaderRecord = false,
+            };
+            using (var stream = File.Open(_BookPath(), FileMode.Append))           // ("path\\to\\file.csv", FileMode.Append))
+            using (var writer = new StreamWriter(stream))
+            using (var csv = new CsvWriter(writer, config))
+            {
+                csv.WriteRecords(adder);
+            }
+
+
+        }
+
+        public void AppendNewBook(string inTitle, string inAuthor, string inISBN, int? inCopies)
+        {
+            int copies;
+            if (inCopies == null || inCopies <= 0)
+            {
+                copies = 1;
+            }
+            else { copies = (int)inCopies; }
+
+            List<Book> adder = new List<Book>
+            {
+                //make new Book
+                new Book
+                    {
+                        Id = bookInc(),
+                        Title = inTitle,
+                        Author = inAuthor,
+                        ISBN = inISBN,
+                        AvailableCopies = copies
+                    },
+            };
+
+            // Append to the file.
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                // Don't write the header again.
+                HasHeaderRecord = false,
+            };
+            using (var stream = File.Open(_BookPath(), FileMode.Append))           // ("path\\to\\file.csv", FileMode.Append))
+            using (var writer = new StreamWriter(stream))
+            using (var csv = new CsvWriter(writer, config))
+            {
+                csv.WriteRecords(adder);
+            }
+
+
+        }
+
+
 
 
 
@@ -1122,8 +1248,176 @@ namespace LibWebApp_L5_v4.Services
                 Console.WriteLine("Invalid input!\n");
             }
         }
+        */
 
-        static void ListBorrowedBooks()
+
+
+        
+        public void ReturnBook(User? inuser, Book? inbook)
+        {
+
+            //ListBorrowedBooks();
+            //Console.Write("\nEnter User ID to return a book for: ");
+
+            List<Book> bList = ReadBooksOld();
+            List<User> uList = ReadUsersOld();
+            List<Book> bbLister = ReadBorrowedBooksByUser(inuser);
+
+            //if (int.TryParse(Console.ReadLine(), out int userId))
+            //{
+            try
+            { 
+
+                //User user = uList.FirstOrDefault(u => u.Id == inuser.Id);
+
+                //List<User> ushortlist = uList.FindAll(u => u.Id == inuser.Id);
+
+
+                //foreach ()
+
+
+                if (inuser != null && borrowedBooks.ContainsKey(inuser))// && borrowedBooks[user].Count > 0)
+                {
+
+                    Console.WriteLine("Borrowed Books:");
+                    int i = 0;
+                    foreach(Book booker in bbLister)//borrowedBooks[inuser]) //for (int i = 0; i < borrowedBooks[user].Count; i++)
+                    {
+                        Console.WriteLine($"{i + 1}. {booker.Id}. {booker.Title} by {booker.Author} (ISBN: {booker.ISBN})");
+                        //                        Console.WriteLine($"{i + 1}. {borrowedBooks[user][i].Id}. {borrowedBooks[user][i].Title} by {borrowedBooks[user][i].Author} (ISBN: {borrowedBooks[user][i].ISBN})");
+                        i = i + 1;
+                    }
+
+                    Console.Write("\nEnter the number of the book to return: ");
+
+
+
+
+                    try 
+                    {
+                        Book? book = bbLister.FirstOrDefault(b => b.Id == inbook.Id);
+                        if (book != null)
+                        {
+                            Book bookToReturn = book;
+
+                            //bool loop1 = false;
+                            //bool loop2 = false;
+                            bool condition = false;
+                            try
+                            {
+                                User ucut = new User();
+                                Book bcut = new Book();
+                                foreach (User uloop in borrowedBooks.Keys)
+                                {
+                                    foreach (Book bloop in borrowedBooks[uloop])
+                                    {
+                                        if (bloop == book)
+                                        {
+                                            Console.WriteLine("book match found");
+                                            //borrowedBooks[uloop].Remove(bloop);
+                                            ucut = uloop;
+                                            bcut = bloop;
+                                            condition = true;
+                                        }
+                                    }
+                                    Console.WriteLine("bookloop finished");
+                                }
+                                Console.WriteLine("userloop finished");
+                                
+                                borrowedBooks[ucut].Remove(bcut);
+
+                                if (borrowedBooks[ucut].Count == 0)
+                                { 
+                                    borrowedBooks.Remove(ucut);
+                                    Console.WriteLine($"Removed {ucut} from list of borrowing users");
+                                }
+
+                                i = 0;
+                                List<Book> bbListly = ReadBorrowedBooksByUser(inuser);
+                                foreach (Book booker in bbListly)
+                                {
+                                    Console.WriteLine($"{i + 1}. {booker.Id}. {booker.Title} by {booker.Author} (ISBN: {booker.ISBN})");
+                                    i = i + 1;
+                                }
+                        
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new ApplicationException($"userbook loop error. An error occurred: {ex.Message}.", ex);
+                            }
+
+                            //borrowedBooks[inuser].Remove(bookToReturn);
+                            bool bookFound = false;
+
+
+                            foreach (Book b in bbLister)
+                            {
+                                // see if there exists a matching book
+                                if (b.Title == bookToReturn.Title && b.Author == bookToReturn.Author && b.ISBN == bookToReturn.ISBN)
+                                {
+                                    b.AvailableCopies += 1;
+                                    bookFound = true;
+
+                                    EditBook(b); // update the AvailableCopies
+                                }
+                            }
+
+                            if (bookFound == false)
+                            {
+                                foreach (Book b in bbLister)
+                                {
+                                    if (b.Id == bookToReturn.Id)
+                                    {
+                                        bookToReturn.Id = bbLister.Any() ? bbLister.Max(b => b.Id) + 1 : 1;
+                                        Console.WriteLine("bookId conflict! updated returning bookID");
+
+
+                                    }
+                                }
+
+                                bookToReturn.AvailableCopies = 1;
+                                //List<Book> adder = new List<Book>();
+                                //adder.Add(bookToReturn);
+                                AppendNewBook(bookToReturn);
+                            }
+
+
+
+                            
+
+                            Console.WriteLine("Book updated successfully!\n");
+
+
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid book input!\n");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ApplicationException($"An error occurred: {ex.Message}. Book not found", ex);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("User not found or no borrowed books!\n");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Invalid input!\n");
+                throw new ApplicationException($"An error occurred: {ex.Message}. User not found", ex);
+            }
+        }
+
+
+
+
+
+
+
+        public void ListBorrowedBooks()
         {
 
             Console.WriteLine("\nBorrowed Books:");
@@ -1140,11 +1434,89 @@ namespace LibWebApp_L5_v4.Services
                 Console.WriteLine();
             }
         }
-         */
+
+        public List<User> ReadBorrowUsers()
+        {
+            List<User> outputs = new List<User>(borrowedBooks.Keys);
+            foreach (var key in borrowedBooks.Keys)
+            {
+            
+                //if (!outputs.Contains(key))
+                //{
+                    outputs.Add(key);
+                //}
+            }
+
+            List<User> putouts = new List<User>();
+            putouts = outputs.DistinctBy(u => u.Id).ToList();           //https://josipmisko.com/posts/c-sharp-unique-list
+
+            //List<User> outs = outputs.Distinct().ToList();
+            return putouts;//.Distinct;
+        }
+
+        public List<Book> ReadBorrowedBooksByUser(User? user)
+        {
+            //if (user != null)
+            //{ 
+            //}
+            try 
+            {
+                List<Book> outputs = new List<Book>();
+                if (borrowedBooks.ContainsKey(user)) 
+                {
+
+                    foreach (User userer in borrowedBooks.Keys)
+                    {
+                        if (userer.Id == user.Id)
+                        {
+                            foreach (var booker in borrowedBooks[userer])
+                            {
+                                outputs.Add(booker);
+                            }
+                        }
+                    }
+
+                    //outputs = borrowedBooks[user];
+                }
+                return outputs;
+            }
+            catch(Exception ex)
+            {
+                throw new ApplicationException($"An error occurred: {ex.Message}.", ex);
+            }
+        }
 
 
 
 
+        public async Task<List<Book>> AsyncReadBorrowedBooksByUser(User? user)
+        {
+            //if (user != null)
+            //{ 
+            //}
+            try
+            {
+                List<Book> outputs = new List<Book>();
+                if (borrowedBooks.ContainsKey(user))
+                {
+                    foreach (User userer in borrowedBooks.Keys)
+                    {
+                        if (userer.Id == user.Id)
+                        {
+                            foreach (var booker in borrowedBooks[userer])
+                            {
+                                outputs.Add(booker);
+                            }
+                        }
+                    }
+                }
+                return await Task.FromResult(outputs);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred: {ex.Message}.", ex);
+            }
+        }
 
 
 
