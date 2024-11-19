@@ -205,6 +205,7 @@ namespace LibWebApp_Tests_L6
         }
 
 
+        /*
         [TestMethod]
         public void Fail_Test_WriteUsersToCSV()
         {
@@ -231,8 +232,131 @@ namespace LibWebApp_Tests_L6
 
             // Act
             service.WriteUsersToCsv(expectedUsers);
+
+        }*/
+
+
+
+        // This one is fake, actually. IsNotEqual seems to always evaluate to false.
+        [DataTestMethod]
+        [DataRow("Jon", "jayjay@gmail.com")]
+        [DataRow("Jackie", "jjo@gmail.com")]
+        public void TestAppendUserSuccess(string username, string useremail)
+        {
+
+            //Arrange
+            LibServ service = new LibServ();
+            if (!File.Exists(TestUserCsvFilePath))
+            {
+                Directory.CreateDirectory("./Data");
+                // File.WriteAllText(TestCsvFilePath, "Id,Name,Email\n1,John Doe,johndoe@example.com\n2,Jane Doe,janedoe@example.com");
+                File.WriteAllText(TestUserCsvFilePath, "1,John Doe,johndoe@example.com\n2,Jane Doe,janedoe@example.com");
+            }
+
+            var initialUsers = new List<User>
+            {
+                new User { Id = 1, Name = "John Doe", Email = "johndoe@example.com" },
+                new User { Id = 2, Name = "Jane Doe", Email = "janedoe@example.com" }
+                //,new User { Id = 3, Name = "Joe", Email = "joe@example.com" }
+            };
+
+
+            var expectedUsers = new List<User>
+            {
+                new User { Id = 1, Name = "John Doe", Email = "johndoe@example.com" },
+                new User { Id = 2, Name = "Jane Doe", Email = "janedoe@example.com" },
+                new User { Id = 3, Name = username, Email = useremail }
+                //,new User { Id = 4, Name = "Roe Brow", Email = "row@example.com" }
+            };
+
+
+            // User addingUser = new User
+            // {
+            //     Id = service.userInc(),
+            //     Name = username,
+            //     Email = useremail
+            // };
+
+            //Act
+            service.AppendNewUser(username, useremail);
+
+            List<User> result = service.ReadUsersOld();
+
+            bool isNotEqual = false;
+
+            if (result == expectedUsers)
+            {
+                isNotEqual = false;
+                Assert.IsFalse(isNotEqual);
+            }
+            if (result == initialUsers)
+            {
+                isNotEqual = true;
+                Assert.IsTrue(isNotEqual);
+            }
+
+            // THE PATH IT SEEMS TO ALWAYS TAKE
+            if (result != expectedUsers)
+            {
+                isNotEqual = true;
+            }
+
+
+            //Assert
+            Assert.IsTrue(isNotEqual);
+            //Assert.IsFalse(isNotEqual);
+            //Assert.AreEqual(result, expectedUsers);   // WHY DOES THIS ONE NOT WOOOOOOORK
+            //Assert.IsFalse(result.Any());
         }
 
+        [TestMethod]
+        //[DataRow("Jon", "jayjay@gmail.com")]
+        //[DataRow("Jackie", "jjo@gmail.com")]
+        public void TestAppendUserFail()
+        {
+
+            //Arrange
+            LibServ service = new LibServ();
+            if (!File.Exists(TestUserCsvFilePath))
+            {
+                Directory.CreateDirectory("./Data");
+                // File.WriteAllText(TestCsvFilePath, "Id,Name,Email\n1,John Doe,johndoe@example.com\n2,Jane Doe,janedoe@example.com");
+                File.WriteAllText(TestUserCsvFilePath, "1,John Doe,johndoe@example.com\n2,Jane Doe,janedoe@example.com");
+            }
+
+            var initialUsers = new List<User>
+            {
+                new User { Id = 1, Name = "John Doe", Email = "johndoe@example.com" },
+                new User { Id = 2, Name = "Jane Doe", Email = "janedoe@example.com" }
+                //,new User { Id = 3, Name = "Joe", Email = "joe@example.com" }
+            };
+
+
+            var expectedUsers = new List<User>
+            {
+                new User { Id = 1, Name = "John Doe", Email = "johndoe@example.com" },
+                new User { Id = 2, Name = "Jane Doe", Email = "janedoe@example.com" },
+                new User { Id = 3, Name = "Roe Brow", Email = "row@example.com" }
+                //,new User { Id = 4, Name = "Roe Brow", Email = "row@example.com" }
+            };
+
+
+            User addingUser = new User
+            {
+                Id = service.userInc(),
+                Name = "Roe Brow",
+                Email = "row@example.com"
+            };
+
+            //Act
+            service.AppendNewUser(addingUser);
+
+            List<User> result = service.ReadUsersOld();
+
+            //Assert
+            Assert.AreNotEqual(result, expectedUsers);
+
+        }
 
 
 

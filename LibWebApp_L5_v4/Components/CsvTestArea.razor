@@ -118,6 +118,7 @@
 
 </table>
 
+
 <hr />
 @if (tester == null)
 {
@@ -148,6 +149,7 @@ else
             }
         </tbody>
     </table>
+
 }
 
 
@@ -171,7 +173,7 @@ Header with name 'AvailableCopies'[0] -->
         //    books = await libService.GetAllBooksAsync();
         users = await libby.ReadUsersOldAsync();
         books = await libby.ReadBooksOldAsync();
-        tester = await libby.ReadUsersAsync();
+        //tester = await libby.ReadUsersAsync();
     }
 }
 

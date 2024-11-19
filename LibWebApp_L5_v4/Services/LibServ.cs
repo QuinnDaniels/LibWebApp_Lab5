@@ -146,10 +146,15 @@ namespace LibWebApp_L5_v4.Services
                 csv.Context.RegisterClassMap<UserMapNoHeaders>(); // Use a custom mapping for no-header CSV
                     //csv.HeaderRecord = false;
                     List<User> records = new List<User>();
+
+                    User head = new User
+                    {
+                        Id = int.Parse(csv.HeaderRecord[0]),
+                        Name = csv.HeaderRecord[1],
+                        Email = csv.HeaderRecord[2]
+                    };
                     
-                    
-                    
-                    records.Add(makeUser(csv.HeaderRecord));
+                    records.Add(head);
 
                     records.AddRange(csv.GetRecords<User>().ToList());
                     return records;
@@ -200,9 +205,14 @@ namespace LibWebApp_L5_v4.Services
 
                     List<User> records = new List<User>();
 
-
-
-                    records.Add(makeUser(csv.HeaderRecord));
+                    User head = new User
+                    {
+                        Id = int.Parse(csv.HeaderRecord[0]),
+                        Name = csv.HeaderRecord[1],
+                        Email = csv.HeaderRecord[2]
+                    };
+                    
+                    records.Add(head);
 
                     records.AddRange(csv.GetRecords<User>().ToList());
                     //return records;
@@ -623,23 +633,23 @@ namespace LibWebApp_L5_v4.Services
         }
 
 
-        public User makeUser(string[] headerrow)
-        {
-            //fields = headerrow.Split(',');
-            var fields = headerrow;
-
-            //if (fields.Length >= 3) // Ensure there are enough fields
-            //{
-                User user = new User
-                {
-                    Id = int.Parse(fields[0].Trim()),
-                    Name = fields[1].Trim(),
-                    Email = fields[2].Trim()
-                };
-
-                return user;
-            //}
-        }
+        //public User makeUser(string[] headerrow)
+        //{
+        //    //fields = headerrow.Split(',');
+        //    var fields = headerrow;
+        //
+        //    //if (fields.Length >= 3) // Ensure there are enough fields
+        //    //{
+        //        User user = new User
+        //        {
+        //            Id = int.Parse(fields[0].Trim()),
+        //            Name = fields[1].Trim(),
+        //            Email = fields[2].Trim()
+        //        };
+        //
+        //        return user;
+        //    //}
+        //}
 
         public Book makeBook(string inTitle, string inAuthor, string inISBN, int? inCopies)
         {
@@ -658,23 +668,43 @@ namespace LibWebApp_L5_v4.Services
             return output;
         }
 
+        // public void AppendNewUser(List<User> user)
+        // {
+        //     AppendNewUser(user, ArgumentException);
+        // }
 
         public void AppendNewUser(List<User> user)
-        { 
-            // Append to the file.
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            bool emptyfields = false;
+
+            foreach (User u in user)
+            {
+                if (u.Name == "") { emptyfields = true;  }
+                if (u.Email == "") { emptyfields = true; }
+            }
+
+
+            if (emptyfields == false)
+            {
+                // Append to the file.
+                var config = new CsvConfiguration(CultureInfo.InvariantCulture)
                 {
                     // Don't write the header again.
                     HasHeaderRecord = false,
                 };
-            using (var stream = File.Open(_UserPath(), FileMode.Append))           // ("path\\to\\file.csv", FileMode.Append))
-            using (var writer = new StreamWriter(stream))
-            using (var csv = new CsvWriter(writer, config))
-            {
-                csv.WriteRecords(user);
+                using (var stream = File.Open(_UserPath(), FileMode.Append))           // ("path\\to\\file.csv", FileMode.Append))
+                using (var writer = new StreamWriter(stream))
+                using (var csv = new CsvWriter(writer, config))
+                {
+                    csv.WriteRecords(user);
+                }
             }
-        
-        
+            else 
+            {
+                // later: have this throw a custom exception
+                //https://dotnettutorials.net/lesson/create-custom-exception-csharp/
+            }
+
         }
 
 

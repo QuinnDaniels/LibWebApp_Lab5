@@ -44,7 +44,7 @@ namespace LibWebApp_L5_v4.Services
 
 
         public User makeUser(string name, string email);
-        public User makeUser(string[] headerrow);
+        //public User makeUser(string[] headerrow);
         public Book makeBook(string inTitle, string inAuthor, string inISBN, int? inCopies);
 
 
