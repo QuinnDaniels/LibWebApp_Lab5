@@ -118,8 +118,37 @@
 
 </table>
 
-
-
+<hr />
+@if (tester == null)
+{
+    <p>Loading users...</p>
+}
+else if (!tester.Any())
+{
+    <p>No users available.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in tester)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.Name</td>
+                    <td>@user.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 
 
@@ -135,11 +164,14 @@ Header with name 'AvailableCopies'[0] -->
 
     private List<User> users;
 
+    private List<User> tester;
+
     protected override async Task OnInitializedAsync()
     {
         //    books = await libService.GetAllBooksAsync();
         users = await libby.ReadUsersOldAsync();
         books = await libby.ReadBooksOldAsync();
+        tester = await libby.ReadUsersAsync();
     }
 }
 

@@ -17,6 +17,7 @@ using System;
 using Microsoft.VisualBasic.FileIO;
 using LibWebApp_L5_v4.Components;
 using System.Reflection.Metadata;
+//using static System.Net.WebRequestMethods;
 
 
 namespace LibWebApp_L5_v4.Services
@@ -27,19 +28,41 @@ namespace LibWebApp_L5_v4.Services
     public class LibServ : ILibServ
     {
 
+        // object of service
+        public LibServ() { }
+
         //        public User CurrentUser { get; set; }
 
 
-
+        /// <summary>
+        /// Dictionary to store <User, List<Book>>.
+        /// NOTE: Check functionality of adding records. 
+        /// </summary>
         public Dictionary<User, List<Book>> borrowedBooks { get; set; } = new Dictionary<User, List<Book>>();
 
 
+     //       public LibServ()
+     //       {
+     //           _pathToUsers = new Path(_UserPath());
+     //       }
+     //
+     //
+     //   private userpath_();
 
+
+        /// <summary>
+        /// Simple method that fetches the path to Users.csv. Seemed easier than setting up an accessible variable.
+        /// </summary>
+        /// <returns>string of path to Users.csv</returns>
         private static string _UserPath()
         { 
             string path = Path.Combine(".", "Data", "Users.csv");
             return path;
         }
+        /// <summary>
+        /// Simple method that fetches the path to Books.csv. Seemed easier than setting up an accessible variable.
+        /// </summary>
+        /// <returns>string of path to Books.csv</returns>
         private static string _BookPath()
         {
             string path = Path.Combine(".", "Data", "Books.csv");
@@ -47,41 +70,88 @@ namespace LibWebApp_L5_v4.Services
         }
 
 
-
+        /// <summary>
+        /// Simple method to check the number of User records in Users.csv. Uses ReadUsersOld()
+        /// </summary>
+        /// <returns>int of number of users</returns>
         public int userCount()
         {
             return ReadUsersOld().Count();
         }
-
+        /// <summary>
+        /// Simple method to check the number of Book records in Books.csv. Uses ReadBooksOld()
+        /// </summary>
+        /// <returns>int of number of books</returns>
         public int bookCount()
         {
             return ReadBooksOld().Count();
         }
 
-
+        /// <summary>
+        /// Increments the number of Users + 1. Used for setting new User.Id values
+        /// </summary>
+        /// <returns>int userCount() + 1</returns>
         public int userInc() { return userCount() + 1; }
+
+        /// <summary>
+        /// Increments the number of Books + 1. Used for setting new Book.Id values
+        /// </summary>
+        /// <returns>int bookCount() + 1</returns>
         public int bookInc() { return bookCount() + 1; }
+
+        /// <summary>
+        /// Decrements the number of Users - 1. 
+        /// </summary>
+        /// <returns>int userCount() - 1</returns>
         public int userDec() { return userCount() + 1; }
+
+        /// <summary>
+        /// Decrements the number of Books - 1. 
+        /// </summary>
+        /// <returns>int bookCount() - 1</returns>
         public int bookDec() { return bookCount() + 1; }
 
 
 
         //private readonly string _bookPath = Path.Combine(".", "Data", "Books.csv");
         //private readonly string _userPath = Path.Combine(".", "Data", "Users.csv");
-
+        
+        // Custom mapping for CSV without headers
+        public sealed class UserMapNoHeaders : ClassMap<User>
+        {
+            public UserMapNoHeaders()
+            {
+                Map(m => m.Id).Index(0);
+                Map(m => m.Name).Index(1);
+                Map(m => m.Email).Index(2);
+            }
+        }
 
         /// <summary>
         /// intended to do the same as Read methods but without the need to pass a variable
         /// </summary>
-        /// <returns></returns>
+        /// <returns>List of Users </returns>
         public List<User> ReadUsers()
         {
             try
-            { 
+            {
+   //             CsvConfiguration config = new CsvConfiguration(CultureInfo.InvariantCulture)
+  //              {
+ //                   HasHeaderRecord = true
+  //              };
                 using (var reader = new StreamReader(_UserPath()))
                 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
-                    var records = csv.GetRecords<User>().ToList();
+                    //csv.Configuration.HasHeaderRecord = false;
+                csv.Context.RegisterClassMap<UserMapNoHeaders>(); // Use a custom mapping for no-header CSV
+                    //csv.HeaderRecord = false;
+                    List<User> records = new List<User>();
+                    
+                    
+                    
+                    records.Add(makeUser(csv.HeaderRecord));
+
+                    records.AddRange(csv.GetRecords<User>().ToList());
                     return records;
                 }
             }
@@ -103,19 +173,39 @@ namespace LibWebApp_L5_v4.Services
         }
 
 
+
+
+
+
+
+
         /// <summary>
         /// async version of the same thing
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Task of List of Users</returns>
         /// <exception cref="ApplicationException"></exception>
         public async Task<List<User>> ReadUsersAsync()
         {
             try
             {
+                CsvConfiguration config = new CsvConfiguration(CultureInfo.InvariantCulture)
+                {
+                    //HasHeaderRecord = true
+
+                };
                 using (var reader = new StreamReader(_UserPath()))
                 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
-                    var records = csv.GetRecords<User>().ToList();
+                    csv.Context.RegisterClassMap<UserMapNoHeaders>(); // Use a custom mapping for no-header CSV
+
+                    List<User> records = new List<User>();
+
+
+
+                    records.Add(makeUser(csv.HeaderRecord));
+
+                    records.AddRange(csv.GetRecords<User>().ToList());
+                    //return records;
                     return await Task.FromResult(records);
                 }
             }
@@ -147,6 +237,42 @@ namespace LibWebApp_L5_v4.Services
              try
             {
                 foreach (var line in File.ReadLines("./Data/Users.csv"))
+                {
+                    var fields = line.Split(',');
+
+                    if (fields.Length >= 3) // Ensure there are enough fields
+                    {
+                        User user = new User
+                        {
+                            Id = int.Parse(fields[0].Trim()),
+                            Name = fields[1].Trim(),
+                            Email = fields[2].Trim()
+                        };
+
+                        results.Add(user);
+
+                    }
+                }
+                return results;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred: {ex.Message}", ex);
+            }
+        }
+
+
+        /// <summary>
+        /// Uses original method of reading csv results
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="ApplicationException"></exception>
+        public List<User> ReadUsersOld(string filepath)
+        {
+            List<User> results = new List<User>();
+            try
+            {
+                foreach (var line in File.ReadLines(filepath))
                 {
                     var fields = line.Split(',');
 
@@ -301,6 +427,71 @@ namespace LibWebApp_L5_v4.Services
         }
 
 
+        public List<Book> ReadBooksOld(string filepath)
+        {
+            List<Book> results = new List<Book>();
+            try
+            {
+                foreach (var line in File.ReadLines(filepath))
+                {
+                    var fields = line.Split(',');
+
+
+
+                    // added because of book number 117
+                    if (fields.Length >= 7)
+                    {
+                        var book = new Book
+                        {
+                            Id = int.Parse(fields[0].Trim()),
+                            Title = $"{fields[1].Trim()}, {fields[2].Trim()}, {fields[3].Trim()}",
+                            Author = fields[4].Trim(),
+                            ISBN = fields[5].Trim(),
+                            AvailableCopies = int.Parse(fields[6].Trim())
+                        };
+                        results.Add(book);
+                    }
+                    // added due to books with "title"," The "
+                    else if (fields.Length >= 6)
+                    {
+                        var book = new Book
+                        {
+                            Id = int.Parse(fields[0].Trim()),
+                            Title = $"{fields[1].Trim()}, {fields[2].Trim()}",
+                            Author = fields[3].Trim(),
+                            ISBN = fields[4].Trim(),
+                            AvailableCopies = int.Parse(fields[5].Trim())
+                        };
+                        results.Add(book);
+                    }
+                    else if (fields.Length >= 5)
+                    {
+                        var book = new Book
+                        {
+                            Id = int.Parse(fields[0].Trim()),
+                            Title = fields[1].Trim(),
+                            Author = fields[2].Trim(),
+                            ISBN = fields[3].Trim(),
+                            AvailableCopies = int.Parse(fields[4].Trim())
+                        };
+                        results.Add(book);
+                    }
+
+
+                }
+                return results;
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred: {ex.Message}", ex);
+            }
+        }
+
+
+
+
 
         public async Task<List<Book>> ReadBooksOldAsync()
         {
@@ -400,7 +591,7 @@ namespace LibWebApp_L5_v4.Services
         /// <param name="users"></param>
         public void WriteUsersToCsv(List<User> users)
         {
-            using (var writer = new StreamWriter(_BookPath()))
+            using (var writer = new StreamWriter(_UserPath()))
             using (var csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 csvWriter.WriteRecords(users);
@@ -419,6 +610,53 @@ namespace LibWebApp_L5_v4.Services
         }
         */
 
+
+        public User makeUser(string name, string email)
+        { 
+            User output = new User 
+            { 
+                Id = userInc(),
+                Name = name,
+                Email = email
+            };
+            return output;
+        }
+
+
+        public User makeUser(string[] headerrow)
+        {
+            //fields = headerrow.Split(',');
+            var fields = headerrow;
+
+            //if (fields.Length >= 3) // Ensure there are enough fields
+            //{
+                User user = new User
+                {
+                    Id = int.Parse(fields[0].Trim()),
+                    Name = fields[1].Trim(),
+                    Email = fields[2].Trim()
+                };
+
+                return user;
+            //}
+        }
+
+        public Book makeBook(string inTitle, string inAuthor, string inISBN, int? inCopies)
+        {
+            int copies;
+            if (inCopies == null || inCopies <= 0)  { copies = 1; }
+            else { copies = (int)inCopies; }
+            Book output = new Book
+            {
+               
+                Id = bookInc(),
+                Title = inTitle,
+                Author = inAuthor,
+                ISBN = inISBN,
+                AvailableCopies = copies
+            };
+            return output;
+        }
 
 
         public void AppendNewUser(List<User> user)
@@ -1414,7 +1652,7 @@ namespace LibWebApp_L5_v4.Services
 
 
 
-
+        
 
 
         public void ListBorrowedBooks()

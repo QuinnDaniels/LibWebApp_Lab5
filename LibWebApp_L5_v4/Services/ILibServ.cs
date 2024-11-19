@@ -28,10 +28,12 @@ namespace LibWebApp_L5_v4.Services
         public List<User> ReadUsers();
         Task<List<User>> ReadUsersAsync();
         public List<User> ReadUsersOld();
+        public List<User> ReadUsersOld(string filepath);
         Task<List<User>> ReadUsersOldAsync();
 
 
         public List<Book> ReadBooksOld();
+        public List<Book> ReadBooksOld(string filepath);
         Task<List<Book>> ReadBooksOldAsync();
 
 
@@ -39,6 +41,11 @@ namespace LibWebApp_L5_v4.Services
         public List<User> ReadUsers(string filePath);
         public void WriteUsersToCsv(string filePath, List<User> users);
         public void WriteUsersToCsv(List<User> users);
+
+
+        public User makeUser(string name, string email);
+        public User makeUser(string[] headerrow);
+        public Book makeBook(string inTitle, string inAuthor, string inISBN, int? inCopies);
 
 
         public void AppendNewUser(List<User> user);
