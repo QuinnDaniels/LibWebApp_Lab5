@@ -20,8 +20,8 @@ jobs:
 
     env:
       Solution_Name: LibWebApp_L5_v4.sln
-      #Test_Project_Path: TestProject1/TestProject1.csproj
-      Test_Project_Path: LibWebApp_Tests_L6/LibWebApp_Tests_L6.csproj
+      #Test_Project_Path: TestProject1\TestProject1.csproj
+      Test_Project_Path: LibWebApp_Tests_L6\LibWebApp_Tests_L6.csproj
 
     steps:
     - name: Checkout repository
