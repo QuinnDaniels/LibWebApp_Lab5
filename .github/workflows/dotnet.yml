@@ -11,32 +11,29 @@ on:
 
 jobs:
   build-and-test:
-
-    name: build-and-test-${{matrix.os}}
-    runs-on: ${{matrix.os}} 
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     env:
       Solution_Name: LibWebApp_L5_v4.sln
-      #Test_Project_Path: TestProject1\TestProject1.csproj
-      Test_Project_Path: LibWebApp_Tests_L6\LibWebApp_Tests_L6.csproj
+      Test_Project_Path: LibWebApp_Tests_L6/LibWebApp_Tests_L6.csproj
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
         
-    - name: Restore dependencies
-      run: dotnet restore ${{ env.Solution_Name }}
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.Solution_Name }}
       
-    - name: Build
-      run: dotnet build ${{ env.Solution_Name }} --configuration Release --no-restore
+      - name: Build
+        run: dotnet build ${{ env.Solution_Name }} --configuration Release --no-restore
       
-    - name: Test and publish results
-      run: dotnet test ${{ env.Solution_Name }} --no-build --verbosity normal
+      - name: Test and publish results
+        run: dotnet test ${{ env.Test_Project_Path }} --no-build --verbosity normal
