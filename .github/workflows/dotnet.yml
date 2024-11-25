@@ -10,30 +10,19 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+  build:
 
-    env:
-      Solution_Name: LibWebApp_L5_v4.sln
-      Test_Project_Path: LibWebApp_Tests_L6/LibWebApp_Tests_L6.csproj
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-        
-      - name: Restore dependencies
-        run: dotnet restore ${{ env.Solution_Name }}
-      
-      - name: Build
-        run: dotnet build ${{ env.Solution_Name }} --configuration Release --no-restore
-      
-      - name: Test and publish results
-        run: dotnet test ${{ env.Test_Project_Path }} --no-build --verbosity normal
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
